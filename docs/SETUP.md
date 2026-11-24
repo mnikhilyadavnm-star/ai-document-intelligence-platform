@@ -1,15 +1,14 @@
 # Setup
 
-> Portfolio documentation and starter skeleton based on the resume description; not the original production code.
+> Working portfolio implementation rebuilt from the resume description; not the original production code. No API key is required to run locally.
 
 ## Prerequisites
 
-- Docker and Docker Compose
+- Docker and Docker Compose (recommended path)
 - Python 3.11+ (for running the backend without Docker)
 - Node.js 18+ and npm (for running the frontend without Docker)
-- A PostgreSQL database with pgvector and a Redis instance, or Docker Compose to provide them locally
 
-## Option 1: Docker Compose
+## Option 1: Docker Compose (recommended)
 
 ```bash
 cp .env.example .env
@@ -29,8 +28,9 @@ Open:
 
 - Frontend: `http://localhost:3000`
 - Backend health check: `http://localhost:8000/health`
+- API docs: `http://localhost:8000/docs`
 
-Note: the backend and frontend services in `docker-compose.yml` are placeholders. The endpoints in the backend are starter stubs, so the full upload and query flow is not implemented in this skeleton.
+Stop with `Ctrl+C`, then `docker compose down` (add `-v` to wipe the Postgres data volume).
 
 ## Option 2: Backend Only
 
@@ -39,6 +39,8 @@ cd backend
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+# Start Postgres (pgvector) and Redis, e.g. via docker compose:
+docker compose -f ../docker-compose.yml up -d db redis
 cp ../.env.example ../.env
 uvicorn app.main:app --reload --port 8000
 ```
@@ -49,6 +51,12 @@ Check the health endpoint:
 curl http://localhost:8000/health
 ```
 
+Run the tests (no database, Redis, or API key needed):
+
+```bash
+python -m pytest tests/ -v
+```
+
 ## Option 3: Frontend Only
 
 ```bash
@@ -57,10 +65,8 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`.
-
-Note: the frontend is a minimal starter placeholder in `src/App.jsx`, with fetch stubs and no completed API wiring.
+Open `http://localhost:3000`. The Vite dev server proxies `/documents`, `/query`, and `/health` to the backend on port 8000; set `VITE_API_URL` to point elsewhere if needed.
 
 ## Environment Variables
 
-Copy `.env.example` to `.env` and fill in the placeholders. Do not commit real keys or secrets. See `.env.example` in the repository root.
+Copy `.env.example` to `.env`. Do not commit real keys or secrets. `LLM_API_KEY` is optional — leave it empty to use the free local TF-IDF + extractive RAG only.
